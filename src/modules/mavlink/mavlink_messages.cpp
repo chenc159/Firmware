@@ -96,6 +96,7 @@
 #include <uORB/topics/tecs_status.h>
 #include <uORB/topics/telemetry_status.h>
 #include <uORB/topics/transponder_report.h>
+#include <uORB/topics/utias.h>
 #include <uORB/topics/vehicle_air_data.h>
 #include <uORB/topics/vehicle_angular_velocity.h>
 #include <uORB/topics/vehicle_attitude.h>
@@ -5358,6 +5359,70 @@ protected:
 	}
 };
 
+class MavlinkStreamUtias : public MavlinkStream
+{
+public:
+	const char *get_name() const override
+	{
+		return MavlinkStreamUtias::get_name_static();
+	}
+
+	static constexpr const char *get_name_static()
+	{
+		return "UTIAS";
+	}
+
+	static constexpr uint16_t get_id_static()
+	{
+		return MAVLINK_MSG_ID_UTIAS;
+	}
+
+	uint16_t get_id() override
+	{
+		return get_id_static();
+	}
+
+	static MavlinkStream *new_instance(Mavlink *mavlink)
+	{
+		return new MavlinkStreamUtias(mavlink);
+	}
+
+	unsigned get_size() override
+	{
+		return _utias_sub.advertised() ? MAVLINK_MSG_ID_UTIAS + MAVLINK_NUM_NON_PAYLOAD_BYTES : 0;
+	}
+
+private:
+	uORB::Subscription _utias_sub{ORB_ID(utias)};
+
+	/* do not allow top copying this class */
+	MavlinkStreamUtias(MavlinkStreamUtias &) = delete;
+	MavlinkStreamUtias &operator = (const MavlinkStreamUtias &) = delete;
+
+protected:
+	explicit MavlinkStreamUtias(Mavlink *mavlink) : MavlinkStream(mavlink)
+	{}
+
+	bool send(const hrt_abstime t) override
+	{
+		utias_s utias;
+
+		if (_utias_sub.update(&utias)) {
+			mavlink_utias_t msg{};
+
+			msg.time_usec = utias.timestamp;
+			memcpy(msg.pos, utias.pos, sizeof(msg.pos));
+			memcpy(msg.gps, utias.gps, sizeof(msg.gps));
+
+			mavlink_msg_utias_send_struct(_mavlink->get_channel(), &msg);
+
+			return true;
+		}
+
+		return false;
+	}
+};
+
 static const StreamListItem streams_list[] = {
 	create_stream_list_item<MavlinkStreamHeartbeat>(),
 	create_stream_list_item<MavlinkStreamStatustext>(),
@@ -5423,7 +5488,8 @@ static const StreamListItem streams_list[] = {
 	create_stream_list_item<MavlinkStreamProtocolVersion>(),
 	create_stream_list_item<MavlinkStreamFlightInformation>(),
 	create_stream_list_item<MavlinkStreamStorageInformation>(),
-	create_stream_list_item<MavlinkStreamRawRpm>()
+	create_stream_list_item<MavlinkStreamRawRpm>(),
+	create_stream_list_item<MavlinkStreamUtias>()
 };
 
 const char *get_stream_name(const uint16_t msg_id)
