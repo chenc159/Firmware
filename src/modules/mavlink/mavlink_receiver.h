@@ -87,6 +87,7 @@
 #include <uORB/topics/telemetry_status.h>
 #include <uORB/topics/transponder_report.h>
 #include <uORB/topics/tune_control.h>
+#include <uORB/topics/utias.h>
 #include <uORB/topics/vehicle_attitude.h>
 #include <uORB/topics/vehicle_attitude_setpoint.h>
 #include <uORB/topics/vehicle_command.h>
@@ -102,6 +103,9 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/vehicle_trajectory_bezier.h>
 #include <uORB/topics/vehicle_trajectory_waypoint.h>
+
+#include<v2.0/utias/mavlink_msg_utias.h>
+
 
 class Mavlink;
 
@@ -176,6 +180,7 @@ private:
 	void handle_message_statustext(mavlink_message_t *msg);
 	void handle_message_trajectory_representation_bezier(mavlink_message_t *msg);
 	void handle_message_trajectory_representation_waypoints(mavlink_message_t *msg);
+	void handle_message_utias(mavlink_message_t *msg);
 	void handle_message_utm_global_position(mavlink_message_t *msg);
 	void handle_message_vision_position_estimate(mavlink_message_t *msg);
 	void handle_message_onboard_computer_status(mavlink_message_t *msg);
@@ -193,6 +198,9 @@ private:
 	 *
 	 * @return PX4_OK on success, PX4_ERROR on fail.
 	 */
+
+	// orb_advert_t _utias_msg_pub;
+
 	int set_message_interval(int msgId, float interval, int data_rate = -1);
 	void get_message_interval(int msgId);
 
@@ -260,6 +268,7 @@ private:
 	uORB::Publication<vehicle_rates_setpoint_s>		_rates_sp_pub{ORB_ID(vehicle_rates_setpoint)};
 	uORB::Publication<vehicle_trajectory_bezier_s>	_trajectory_bezier_pub{ORB_ID(vehicle_trajectory_bezier)};
 	uORB::Publication<vehicle_trajectory_waypoint_s>	_trajectory_waypoint_pub{ORB_ID(vehicle_trajectory_waypoint)};
+	uORB::Publication<utias_s>		_utias_pub{ORB_ID(utias)};	
 
 	// ORB publications (multi)
 	uORB::PublicationMulti<distance_sensor_s>		_distance_sensor_pub{ORB_ID(distance_sensor)};

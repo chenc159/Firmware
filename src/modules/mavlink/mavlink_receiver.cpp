@@ -271,6 +271,10 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		handle_message_statustext(msg);
 		break;
 
+	case MAVLINK_MSG_ID_utias:
+		handle_message_utias(msg);
+		break;
+
 	default:
 		break;
 	}
@@ -2783,6 +2787,30 @@ void MavlinkReceiver::handle_message_statustext(mavlink_message_t *msg)
 	}
 }
 
+void MavlinkReceiver::handle_message_utias(mavlink_message_t *msg)
+{
+    mavlink_utias_t utias;
+    mavlink_msg_utias_decode(msg, &utias);
+
+    utias_s utias_msg{};
+
+	utias_msg.quat[0] = utias.q1;
+	utias_msg.quat[1] = utias.q2;
+	utias_msg.quat[2] = utias.q3;
+	utias_msg.quat[3] = utias.q4;
+
+	// for (int i = 0; i < 4; i++) {
+	// 	utias_msg.quat[i] = utias.quat[i];
+	// }
+
+    // utias_msg.timestamp = utias.timestamp;
+	// memcpy(utias_msg.quat, utias.quat, sizeof(utias.quat));
+	// memcpy(utias_msg.pos, utias.pos, sizeof(utias.pos));
+	// memcpy(utias_msg.gps, utias.gps, sizeof(utias.gps));
+
+	_utias_pub.publish(utias_msg);
+}
+
 /**
  * Receive data from UART/UDP
  */
@@ -3000,3 +3028,6 @@ MavlinkReceiver::receive_start(pthread_t *thread, Mavlink *parent)
 
 	pthread_attr_destroy(&receiveloop_attr);
 }
+
+
+

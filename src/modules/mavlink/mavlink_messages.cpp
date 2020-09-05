@@ -119,6 +119,10 @@
 #include <uORB/topics/vtol_vehicle_status.h>
 #include <uORB/topics/wind_estimate.h>
 
+// #include<v2.0/utias/utias.h>
+#include<v2.0/utias/mavlink_msg_utias.h>
+
+
 using matrix::Vector3f;
 using matrix::wrap_2pi;
 
@@ -5374,7 +5378,7 @@ public:
 
 	static constexpr uint16_t get_id_static()
 	{
-		return MAVLINK_MSG_ID_UTIAS;
+		return MAVLINK_MSG_ID_utias;
 	}
 
 	uint16_t get_id() override
@@ -5389,7 +5393,7 @@ public:
 
 	unsigned get_size() override
 	{
-		return _utias_sub.advertised() ? MAVLINK_MSG_ID_UTIAS + MAVLINK_NUM_NON_PAYLOAD_BYTES : 0;
+		return _utias_sub.advertised() ? MAVLINK_MSG_ID_utias + MAVLINK_NUM_NON_PAYLOAD_BYTES : 0;
 	}
 
 private:
@@ -5410,9 +5414,19 @@ protected:
 		if (_utias_sub.update(&utias)) {
 			mavlink_utias_t msg{};
 
-			msg.time_usec = utias.timestamp;
-			memcpy(msg.pos, utias.pos, sizeof(msg.pos));
-			memcpy(msg.gps, utias.gps, sizeof(msg.gps));
+			msg.q1 = utias.quat[0];
+			msg.q2 = utias.quat[1];
+			msg.q3 = utias.quat[2];
+			msg.q4 = utias.quat[3];
+
+
+			// for (int i = 0; i < 4; i++) {
+			// 	msg.quat[i] = utias.quat[i];
+			// }
+			// msg.timestamp = utias.timestamp;
+			// memcpy(msg.quat, utias.quat, sizeof(msg.quat));
+			// memcpy(msg.pos, utias.pos, sizeof(msg.pos));
+			// memcpy(msg.gps, utias.gps, sizeof(msg.gps));
 
 			mavlink_msg_utias_send_struct(_mavlink->get_channel(), &msg);
 
