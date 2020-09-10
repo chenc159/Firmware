@@ -82,6 +82,8 @@
 #include "mavlink_shell.h"
 #include "mavlink_ulog.h"
 
+#include<v2.0/utias/mavlink_msg_utias.h>
+
 #define DEFAULT_BAUD_RATE       57600
 #define DEFAULT_DEVICE_NAME     "/dev/ttyS1"
 
